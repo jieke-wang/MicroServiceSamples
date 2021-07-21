@@ -21,6 +21,14 @@ namespace UserService.ConsulLibs {
          * Value是一个Base64编码的数据块。
          */
         protected override async Task ExecuteAsync (CancellationToken stoppingToken) {
+            Task[] tasks = new [] {
+                // WatchKV (stoppingToken),
+                WatchServiceAsync (stoppingToken),
+            };
+            await Task.WhenAll (tasks);
+        }
+
+        async Task WatchKV (CancellationToken stoppingToken) {
             const string watchKey = "Watchkey1";
             QueryResult<KVPair> queryResult = await _client.KV.Get (watchKey, stoppingToken);
             Console.WriteLine (JsonSerializer.Serialize (queryResult));
@@ -31,6 +39,22 @@ namespace UserService.ConsulLibs {
 
                 if (queryResult.Response != null) {
                     latestModifyIndex = queryResult.Response.ModifyIndex;
+                }
+            }
+        }
+
+        // Catalog Service watch无效,目前只能阻塞轮询
+        async Task WatchServiceAsync (CancellationToken stoppingToken) {
+            const string serviceName = "ProductService";
+            QueryResult<CatalogService[]> queryResult = await _client.Catalog.Service (serviceName, string.Empty, stoppingToken);
+            Console.WriteLine (JsonSerializer.Serialize (queryResult));
+            ulong latestModifyIndex = queryResult?.LastIndex ?? 0ul;
+            while (stoppingToken.IsCancellationRequested == false) {
+                queryResult = await _client.Catalog.Service (serviceName, string.Empty, new QueryOptions { WaitIndex = latestModifyIndex + 1, WaitTime = TimeSpan.FromSeconds (10) }, stoppingToken); // 这里会阻塞访问api，直到服务器的数据发生变化或请求超时
+                Console.WriteLine (JsonSerializer.Serialize (queryResult));
+
+                if (queryResult.Response != null) {
+                    latestModifyIndex = queryResult.LastIndex;
                 }
             }
         }
