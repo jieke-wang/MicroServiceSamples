@@ -15,7 +15,7 @@ namespace UserService.ConsulLibs {
             QueryResult<KVPair> result = await _client.KV.Get (key);
 
             byte[] value = result?.Response?.Value;
-            if(value == null) return string.Empty;
+            if (value == null) return string.Empty;
 
             return _utf8.GetString (value);
         }
