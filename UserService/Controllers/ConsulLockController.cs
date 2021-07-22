@@ -7,7 +7,7 @@ using UserService.ConsulLibs;
 
 namespace UserService.Controllers {
     [ApiController]
-    [Route ("api/[controller]/[action]")]
+    [Route ("UserService/[controller]/[action]")]
     public class ConsulLockController : ControllerBase {
         private readonly IConsulLock _lock;
 

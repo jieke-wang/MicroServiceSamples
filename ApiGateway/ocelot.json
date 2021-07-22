@@ -1,0 +1,38 @@
+{
+  "Routes": [ // 路由表
+    // swagger配置
+    {
+      "DownstreamPathTemplate": "/UserService/swagger.json",
+      "DownstreamScheme": "http",
+      "UpstreamPathTemplate": "/UserService/swagger.json",
+      "UpstreamHttpMethod": [ "Get", "Post", "Put", "Delete", "Options", "Headers" ],
+      "UseServiceDiscovery": true,
+      "ServiceName": "UserService",
+      "LoadBalancerOptions": {
+        "Type": "RoundRobin"
+      }
+    },
+    // 服务配置
+    {
+      "DownstreamPathTemplate": "/UserService/{url}", // 下游服务地址--url变量
+      "DownstreamScheme": "http", // 下游服务协议
+      "UpstreamPathTemplate": "/UserService/{url}", // 上游网关地址--url变量
+      "UpstreamHttpMethod": [ "Get", "Post", "Put", "Delete", "Options", "Headers" ], // 请求转发支持的http method
+      "UseServiceDiscovery": true, // 使用服务发现,即使用服务注册中心
+      "ServiceName": "UserService", // 在Consul注册的服务名称
+      "LoadBalancerOptions": { //  负载均衡方式
+        "Type": "RoundRobin" // RoundRobin: 轮询; LeastConnection: 最少连接; NoLoadBalance: 不负载均衡;
+      }
+    }
+  ],
+  "GlobalConfiguration": { // 全局配置
+    "BaseUrl": "http://192.168.199.101:5000", // 网关对外地址
+    "ServiceDiscoveryProvider": { // 服务发现配置
+      "Scheme": "http",
+      "Host": "192.168.199.133", // Consul服务主机
+      "Port": 8500, // Consul服务端口
+      "Type": "Consul", // 指定使用Consul提供服务发现
+      "Token": "1rYILuiNEAKT9Qz7CREYqymBPUSQh0zeRdeBzwdpD0U=" // Consul ACL Token
+    }
+  }
+}

@@ -4,7 +4,7 @@ using UserService.ConsulLibs;
 
 namespace UserService.Controllers {
     [ApiController]
-    [Route ("api/[controller]")]
+    [Route ("UserService/[controller]")]
     public class ConsulKVController : ControllerBase {
         private readonly IConsulKV _consulKV;
         public ConsulKVController (IConsulKV consulKV) {

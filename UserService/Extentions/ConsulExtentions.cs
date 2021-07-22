@@ -27,7 +27,7 @@ namespace UserService.Extentions {
             services.AddSingleton<IConsulKV, ConsulKV> ();
             services.AddSingleton<IConsulLock, ConsulLock> ();
 
-            services.AddHostedService<ConsulWatchBackgroundService>();
+            //services.AddHostedService<ConsulWatchBackgroundService>();
 
             return services;
         }
