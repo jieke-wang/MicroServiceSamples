@@ -1,21 +1,20 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Net;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 
+using Ocelot.Cache.CacheManager;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 using Ocelot.Provider.Consul;
+using Ocelot.Provider.Polly;
 
 namespace ApiGateway
 {
@@ -31,9 +30,25 @@ namespace ApiGateway
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            //Action<JwtBearerOptions> configureOptions = options =>
+            //{
+            //    options.Authority = "http://192.168.199.101:5000";
+            //    options.RequireHttpsMetadata = false;
+            //    options.TokenValidationParameters = new TokenValidationParameters
+            //    {
+            //        ValidateAudience = false,
+            //    };
+            //};
+
             services
                 .AddOcelot()
-                .AddConsul();
+                .AddConsul()
+                .AddCacheManager(x =>
+                {
+                    x.WithDictionaryHandle();
+                })
+                .AddPolly();
+            //.AddAdministration("/administration", configureOptions);
 
             // 使用swagger,需要配置AddControllers,否则报错
             services.AddControllers();
@@ -48,17 +63,41 @@ namespace ApiGateway
         {
             if (env.IsDevelopment())
             {
-                app.UseDeveloperExceptionPage();
+                //app.UseDeveloperExceptionPage();
                 app.UseSwagger();
                 app.UseSwaggerUI(c =>
                 {
-                    List<string> services = new List<string> { "UserService" };
+                    List<string> services = new List<string> { "UserService", "ProductService" };
                     services.ForEach(service =>
                     {
                         c.SwaggerEndpoint($"/{service}/swagger.json", service);
                     });
                 });
             }
+
+            // 服务降级
+            app.Use(async (context, next) =>
+            {
+                bool hasError = false;
+                try
+                {
+                    await next.Invoke();
+                    hasError = context.Response.StatusCode > 400;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                    hasError = true;
+                }
+
+                if (hasError)
+                {
+                    context.Response.Clear();
+                    context.Response.ContentType = "text/plain; charset=utf8";
+                    context.Response.StatusCode = (int)HttpStatusCode.GatewayTimeout;
+                    await context.Response.WriteAsync("系统繁忙，请稍后重试 ...");
+                }
+            });
 
             app.UseOcelot().Wait();
 

@@ -12,6 +12,17 @@
         "Type": "RoundRobin"
       }
     },
+    {
+      "DownstreamPathTemplate": "/swagger/v1/swagger.json",
+      "DownstreamScheme": "http",
+      "UpstreamPathTemplate": "/ProductService/swagger.json",
+      "UpstreamHttpMethod": [ "Get", "Post", "Put", "Delete", "Options", "Headers" ],
+      "UseServiceDiscovery": true,
+      "ServiceName": "ProductService",
+      "LoadBalancerOptions": {
+        "Type": "RoundRobin"
+      }
+    },
     // 服务配置
     {
       "DownstreamPathTemplate": "/UserService/{url}", // 下游服务地址--url变量
@@ -21,7 +32,35 @@
       "UseServiceDiscovery": true, // 使用服务发现,即使用服务注册中心
       "ServiceName": "UserService", // 在Consul注册的服务名称
       "LoadBalancerOptions": { //  负载均衡方式
-        "Type": "RoundRobin" // RoundRobin: 轮询; LeastConnection: 最少连接; NoLoadBalance: 不负载均衡;
+        "Type": "RoundRobin" // RoundRobin: 轮询; LeastConnection: 最少连接; NoLoadBalance: 不负载均衡; CookieStickySessions: 会话粘滞;
+      }
+      //"Priority": 1 // 权重,默认为零,当路由匹配冲突时,优先使用权重高的,数值越大,权重越高
+    },
+    {
+      "DownstreamPathTemplate": "/ProductService/{url}",
+      "DownstreamScheme": "http",
+      "UpstreamPathTemplate": "/ProductService/{url}",
+      "UpstreamHttpMethod": [ "Get", "Post", "Put", "Delete", "Options", "Headers" ],
+      "UseServiceDiscovery": true,
+      "ServiceName": "ProductService",
+      "LoadBalancerOptions": {
+        "Type": "RoundRobin"
+      },
+      //"FileCacheOptions": { // 缓存配置
+      //  "TtlSeconds": 15, // 单位秒
+      //  "Region": "ProductServiceCache" // 用于清理缓存
+      //},
+      "RateLimitOptions": { // 限流配置
+        "ClientWhitelist": [ "jack" ], // 白名单 ClientId 区分大小写, ClientId可通过 ClientIdHeader 进行指定,默认为ClientId
+        "EnableRateLimiting": true,
+        "Period": "1m", // 1s, 5m, 1h, 1d
+        "PeriodTimespan": 5, // 多少秒之后客户端可以重试
+        "Limit": 5 // 统计时间段内允许的最大请求数量
+      },
+      "QoSOptions": { // 熔断配置
+        "ExceptionsAllowedBeforeBreaking": 3, // 异常多少次触发熔断
+        "DurationOfBreak": 5, // 触发熔断后,熔断持续时间
+        "TimeoutValue": 1000 // 请求时间超过指定毫秒数,则会直接返回超时
       }
     }
   ],
@@ -32,7 +71,14 @@
       "Host": "192.168.199.133", // Consul服务主机
       "Port": 8500, // Consul服务端口
       "Type": "Consul", // 指定使用Consul提供服务发现
-      "Token": "1rYILuiNEAKT9Qz7CREYqymBPUSQh0zeRdeBzwdpD0U=" // Consul ACL Token
+      "Token": "1rYILuiNEAKT9Qz7CREYqymBPUSQh0zeRdeBzwdpD0U=", // Consul ACL Token
+      "PollingInterval": 100 // 更新服务信息的时间间隔,单位ms
+    },
+    "RateLimitOptions": { // 限流配置
+      "DisableRateLimitHeaders": false,
+      "QuotaExceededMessage": "Too many requests, maybe later? jack", // 当请求过载被截断时返回的消息
+      "HttpStatusCode": 400, // 当请求过载被截断时返回的http status
+      "ClientIdHeader": "my_client_id" // 用来识别客户端的请求头，默认是 ClientId
     }
   }
 }

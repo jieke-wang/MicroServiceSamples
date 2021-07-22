@@ -24,3 +24,6 @@ namespace ProductService
                 });
     }
 }
+
+// dotnet ProductService.dll --urls="http://*:5010" --ip="192.168.199.101" --port=5010
+// dotnet ProductService.dll --urls="http://*:5011" --ip="192.168.199.101" --port=5011
