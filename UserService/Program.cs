@@ -24,3 +24,7 @@ namespace UserService
                 });
     }
 }
+
+/*
+http://192.168.199.101:5020/swagger/index.html
+*/

@@ -28,7 +28,9 @@ namespace UserService
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("UserService", new OpenApiInfo { Title = "用户服务", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "用户服务", Version = "v1" });
+
+                c.IncludeXmlComments("UserService.xml", true);
             });
 
             services.AddConsul(Configuration);
@@ -40,13 +42,10 @@ namespace UserService
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseSwagger(config =>
-               {
-                   config.RouteTemplate = "{documentName}/swagger.json";
-               });
+                app.UseSwagger();
                 app.UseSwaggerUI(config =>
                {
-                   config.SwaggerEndpoint("/UserService/swagger.json", "UserService");
+                   config.SwaggerEndpoint("/swagger/v1/swagger.json", "UserService v1");
                });
             }
 

@@ -2,7 +2,7 @@
   "Routes": [ // 路由表
     // swagger配置
     {
-      "DownstreamPathTemplate": "/UserService/swagger.json",
+      "DownstreamPathTemplate": "/swagger/v1/swagger.json",
       "DownstreamScheme": "http",
       "UpstreamPathTemplate": "/UserService/swagger.json",
       "UpstreamHttpMethod": [ "Get", "Post", "Put", "Delete", "Options", "Headers" ],

@@ -28,3 +28,8 @@ namespace ApiGateway
                 });
     }
 }
+
+/*
+http://192.168.199.101:5000/swagger/index.html
+http://192.168.199.101:5000/UserService/ConsulAgent/GetServices
+*/

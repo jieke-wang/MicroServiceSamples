@@ -4,5 +4,30 @@
         <name>UserService</name>
     </assembly>
     <members>
+        <member name="T:UserService.Controllers.ConsulAgentController">
+            <summary>
+            Consul Agent 服务
+            </summary>
+        </member>
+        <member name="M:UserService.Controllers.ConsulAgentController.GetServicesAsync">
+            <summary>
+            获取服务
+            </summary>
+        </member>
+        <member name="M:UserService.Controllers.ConsulAgentController.GetMembersAsync(System.Boolean)">
+            <summary>
+            获取代理成员
+            </summary>
+        </member>
+        <member name="M:UserService.Controllers.ConsulAgentController.GetNodeNameAsync">
+            <summary>
+            获取节点名称
+            </summary>
+        </member>
+        <member name="M:UserService.Controllers.ConsulAgentController.GetSelfAsync">
+            <summary>
+            获取自身节点信息
+            </summary>
+        </member>
     </members>
 </doc>

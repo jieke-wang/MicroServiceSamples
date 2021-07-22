@@ -31,24 +31,15 @@ namespace ApiGateway
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            //services.AddSwaggerGen(c =>
-            //{
-            //    c.SwaggerDoc("v1", new OpenApiInfo { Title = "ApiGateway", Version = "v1" });
-            //});
-
             services
                 .AddOcelot()
                 .AddConsul();
 
+            // 使用swagger,需要配置AddControllers,否则报错
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "网关服务", Version = "v1" });
-                //List<string> services = new List<string> { "UserService" };
-                //services.ForEach(service =>
-                //{
-                //    c.SwaggerDoc(service, new OpenApiInfo { Title = service, Version = "v1" });
-                //});
             });
         }
 
