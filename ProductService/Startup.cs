@@ -47,9 +47,10 @@ namespace ProductService
             if (env.IsDevelopment())
             {
                 //app.UseDeveloperExceptionPage ();
-                app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "ProductService v1"));
             }
+
+            app.UseSwagger();
+            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "ProductService v1"));
 
             app.Map("/health", applicationBuilder => applicationBuilder.Run(async context =>
             {
