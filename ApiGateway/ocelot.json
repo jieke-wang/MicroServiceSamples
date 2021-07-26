@@ -23,6 +23,17 @@
         "Type": "RoundRobin"
       }
     },
+    {
+      "DownstreamPathTemplate": "/swagger/v1/swagger.json",
+      "DownstreamScheme": "http",
+      "UpstreamPathTemplate": "/LoginService/swagger.json",
+      "UpstreamHttpMethod": [ "Get", "Post", "Put", "Delete", "Options", "Headers" ],
+      "UseServiceDiscovery": true,
+      "ServiceName": "LoginService",
+      "LoadBalancerOptions": {
+        "Type": "RoundRobin"
+      }
+    },
     // 服务配置
     {
       "DownstreamPathTemplate": "/UserService/{url}", // 下游服务地址--url变量
@@ -33,8 +44,27 @@
       "ServiceName": "UserService", // 在Consul注册的服务名称
       "LoadBalancerOptions": { //  负载均衡方式
         "Type": "RoundRobin" // RoundRobin: 轮询; LeastConnection: 最少连接; NoLoadBalance: 不负载均衡; CookieStickySessions: 会话粘滞;
-      }
+      },
       //"Priority": 1 // 权重,默认为零,当路由匹配冲突时,优先使用权重高的,数值越大,权重越高
+      "AuthenticationOptions": { // 鉴权配置
+        "AuthenticationProviderKey": "Bearer", // 鉴权方案
+        "AllowedScopes": [ "UserService" ] // 获取所有类型为 scope 的 claims, 拥有 AllowedScopes 中所有的数据项, 否则返回403
+      },
+      "RouteClaimsRequirement": { // 路由必须满足的声明
+        //"scope": "UserService" // 从 token中 获取的 claims,必须包含配置中所有以 type:value 配置的claims, 否则返回403
+        "RegisteredUser": "true"
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/LoginService/{url}", // 下游服务地址--url变量
+      "DownstreamScheme": "http", // 下游服务协议
+      "UpstreamPathTemplate": "/LoginService/{url}", // 上游网关地址--url变量
+      "UpstreamHttpMethod": [ "Get", "Post", "Put", "Delete", "Options", "Headers" ], // 请求转发支持的http method
+      "UseServiceDiscovery": true, // 使用服务发现,即使用服务注册中心
+      "ServiceName": "LoginService", // 在Consul注册的服务名称
+      "LoadBalancerOptions": { //  负载均衡方式
+        "Type": "RoundRobin" // RoundRobin: 轮询; LeastConnection: 最少连接; NoLoadBalance: 不负载均衡; CookieStickySessions: 会话粘滞;
+      }
     },
     {
       "DownstreamPathTemplate": "/ProductService/{url}",

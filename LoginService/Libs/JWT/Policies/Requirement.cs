@@ -16,7 +16,7 @@ namespace LoginService.Libs.JWT.Policies
 
         public static class ClaimTypes
         {
-            public const string Scope = "Scope";
+            public const string Scope = "scope";
         }
 
         public static class PolicyNames

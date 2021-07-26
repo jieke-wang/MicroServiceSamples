@@ -1,13 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Text;
 
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
 using Ocelot.Cache.CacheManager;
@@ -30,6 +33,25 @@ namespace ApiGateway
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(options =>
+            {
+                string configKey = "JWTTokenOptions";
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true, // 是否验证Issuer
+                    ValidateAudience = true, // 是否验证Audience
+                    ValidateLifetime = true, // 是否验证失效时间
+                    ValidateIssuerSigningKey = true, // 是否验证SecurityKey
+                    ValidAudience = Configuration[$"{configKey}:Audience"],
+                    ValidIssuer = Configuration[$"{configKey}:Issuer"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration[$"{configKey}:SecurityKey"]))
+                };
+            });
+
             //Action<JwtBearerOptions> configureOptions = options =>
             //{
             //    options.Authority = "http://192.168.199.101:5000";
@@ -63,11 +85,11 @@ namespace ApiGateway
         {
             if (env.IsDevelopment())
             {
-                //app.UseDeveloperExceptionPage();
+                app.UseDeveloperExceptionPage();
                 app.UseSwagger();
                 app.UseSwaggerUI(c =>
                 {
-                    List<string> services = new List<string> { "UserService", "ProductService" };
+                    List<string> services = new List<string> { "LoginService", "UserService", "ProductService" };
                     services.ForEach(service =>
                     {
                         c.SwaggerEndpoint($"/{service}/swagger.json", service);
@@ -76,30 +98,30 @@ namespace ApiGateway
             }
 
             // 服务降级
-            app.Use(async (context, next) =>
-            {
-                bool hasError = false;
-                try
-                {
-                    await next.Invoke();
-                    hasError = context.Response.StatusCode > 400;
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex);
-                    hasError = true;
-                }
+            //app.Use(async (context, next) =>
+            //{
+            //    bool hasError = false;
+            //    try
+            //    {
+            //        await next.Invoke();
+            //        hasError = context.Response.StatusCode > 400;
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        Console.WriteLine(ex);
+            //        hasError = true;
+            //    }
 
-                if (hasError)
-                {
-                    context.Response.Clear();
-                    context.Response.ContentType = "text/plain; charset=utf8";
-                    context.Response.StatusCode = (int)HttpStatusCode.GatewayTimeout;
-                    await context.Response.WriteAsync("系统繁忙，请稍后重试 ...");
-                }
-            });
+            //    if (hasError)
+            //    {
+            //        context.Response.Clear();
+            //        context.Response.ContentType = "text/plain; charset=utf8";
+            //        context.Response.StatusCode = (int)HttpStatusCode.GatewayTimeout;
+            //        await context.Response.WriteAsync("系统繁忙，请稍后重试 ...");
+            //    }
+            //});
 
-            app.UseOcelot().Wait();
+            app.UseAuthentication().UseOcelot().Wait();
 
             //app.UseHttpsRedirection();
 

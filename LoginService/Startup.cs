@@ -4,6 +4,8 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 
+using LoginService.Extentions;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -51,6 +53,7 @@ namespace LoginService
             });
 
             services.AddJWT(Configuration);
+            services.AddConsul(Configuration);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -79,6 +82,8 @@ namespace LoginService
             {
                 endpoints.MapControllers();
             });
+
+            app.UseConsul();
         }
     }
 

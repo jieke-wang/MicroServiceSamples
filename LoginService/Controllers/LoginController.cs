@@ -53,6 +53,7 @@ namespace LoginService.Controllers
                 {
                     new KeyValuePair<string, string>(Requirement.ClaimTypes.Scope, "ProductService"),
                     new KeyValuePair<string, string>(Requirement.ClaimTypes.Scope, "UserService"),
+                    new KeyValuePair<string, string>("RegisteredUser", "true"),
                 }
             };
 

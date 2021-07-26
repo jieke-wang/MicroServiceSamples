@@ -38,7 +38,8 @@ namespace LoginService.Extentions
             IOptions<ServiceRegisterOptions> serviceRegisterOptions = app.ApplicationServices.GetService<IOptions<ServiceRegisterOptions>>();
             IConsulClient consulClient = app.ApplicationServices.GetRequiredService<IConsulClient>();
             IServerAddressesFeature serverAddressesFeature = app.ServerFeatures.Get<IServerAddressesFeature>();
-            string serviceId = $"LoginService-{string.Join("-", serverAddressesFeature.Addresses)}";
+            string serviceId = $"LoginService-{string.Join("-", serverAddressesFeature.Addresses)}".Replace("//", string.Empty);
+            //Console.WriteLine(serviceId);
 
             consulClient.Agent.ServiceRegister(new AgentServiceRegistration
             {
@@ -60,7 +61,7 @@ namespace LoginService.Extentions
                 .ApplicationServices
                 .GetRequiredService<IHostApplicationLifetime>()
                 .ApplicationStopping.Register(() => {
-                    consulClient.Agent.ServiceDeregister(serviceId);
+                    consulClient.Agent.ServiceDeregister(serviceId).Wait();
                     consulClient.Dispose();
                 });
 

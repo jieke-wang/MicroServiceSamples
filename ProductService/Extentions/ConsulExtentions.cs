@@ -35,7 +35,7 @@ namespace ProductService.Extentions {
             string ip = configuration["ip"];
             string port = configuration["port"];
 
-            string serviceId = $"ProductService-{string.Join("-", serverAddressesFeature.Addresses)}";
+            string serviceId = $"ProductService-{string.Join("-", serverAddressesFeature.Addresses)}".Replace("//", string.Empty);
             if(string.IsNullOrWhiteSpace(ip) == false)
             {
                 serviceId = $"ProductService-{string.Join("-", ip, port)}";
@@ -89,7 +89,7 @@ namespace ProductService.Extentions {
                 .ApplicationServices
                 .GetRequiredService<IHostApplicationLifetime> ()
                 .ApplicationStopping.Register (() => {
-                    consulClient.Agent.ServiceDeregister (serviceId);
+                    consulClient.Agent.ServiceDeregister (serviceId).Wait();
                     consulClient.Dispose ();
                 });
 
