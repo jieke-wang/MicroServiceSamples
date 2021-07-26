@@ -42,16 +42,26 @@ namespace ProductService.Extentions {
 
                 consulClient.Agent.ServiceRegister(new AgentServiceRegistration
                 {
+                    // 服务ID
                     ID = serviceId,
+                    // 服务名称
                     Name = serviceRegisterOptions.Value.Name,
+                    // 服务地址(域名/IP)
                     Address = ip,
+                    // 服务端口号
                     Port = int.Parse(port),
+                    // 服务标签(版本)
                     Tags = serviceRegisterOptions.Value.Tags,
+                    // 服务健康检查
                     Check = new AgentServiceCheck
                     {
+                        // consul健康检查间隔时间
                         Interval = TimeSpan.FromSeconds(serviceRegisterOptions.Value.CheckIntervalOnSeconds),
+                        // consul健康检查地址
                         HTTP = $"http://{ip}:{port}/health",
+                        // consul健康检查超时间
                         Timeout = TimeSpan.FromSeconds(serviceRegisterOptions.Value.CheckTimeoutOnSeconds),
+                        // 服务停止多少秒后注销服务
                         DeregisterCriticalServiceAfter = TimeSpan.FromSeconds(serviceRegisterOptions.Value.DeregisterCriticalServiceAfterOnSeconds),
                     }
                 }).ConfigureAwait(false).GetAwaiter().GetResult();
