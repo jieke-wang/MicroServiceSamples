@@ -39,15 +39,16 @@ namespace UserService
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment())
+            //if (env.IsDevelopment())
+            //{
+            //    app.UseDeveloperExceptionPage();
+            //}
+
+            app.UseSwagger();
+            app.UseSwaggerUI(config =>
             {
-                app.UseDeveloperExceptionPage();
-                app.UseSwagger();
-                app.UseSwaggerUI(config =>
-               {
-                   config.SwaggerEndpoint("/swagger/v1/swagger.json", "UserService v1");
-               });
-            }
+                config.SwaggerEndpoint("/swagger/v1/swagger.json", "UserService v1");
+            });
 
             app.Map("/health", applicationBuilder => applicationBuilder.Run(async context =>
             {
