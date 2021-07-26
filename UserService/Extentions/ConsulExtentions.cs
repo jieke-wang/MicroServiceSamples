@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using UserService.ConsulLibs;
 using UserService.Options;
@@ -36,9 +37,10 @@ namespace UserService.Extentions {
             IOptions<ServiceRegisterOptions> serviceRegisterOptions = app.ApplicationServices.GetService<IOptions<ServiceRegisterOptions>> ();
             IConsulClient consulClient = app.ApplicationServices.GetRequiredService<IConsulClient> ();
             IServerAddressesFeature serverAddressesFeature = app.ServerFeatures.Get<IServerAddressesFeature> ();
+            string serviceId = $"UserService-{string.Join("-", serverAddressesFeature.Addresses)}";
 
             consulClient.Agent.ServiceRegister (new AgentServiceRegistration {
-                ID = $"UserService-{string.Join("-", serverAddressesFeature.Addresses)}",
+                ID = serviceId,
                     Name = serviceRegisterOptions.Value.Name,
                     Address = serviceRegisterOptions.Value.Ip,
                     Port = serviceRegisterOptions.Value.Port,
@@ -50,6 +52,14 @@ namespace UserService.Extentions {
                             DeregisterCriticalServiceAfter = TimeSpan.FromSeconds (serviceRegisterOptions.Value.DeregisterCriticalServiceAfterOnSeconds),
                     }
             }).ConfigureAwait (false).GetAwaiter ().GetResult ();
+
+            app
+                .ApplicationServices
+                .GetRequiredService<IHostApplicationLifetime> ()
+                .ApplicationStopping.Register (() => {
+                    consulClient.Agent.ServiceDeregister (serviceId);
+                    consulClient.Dispose ();
+                });
 
             return app;
         }
